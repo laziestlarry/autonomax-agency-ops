@@ -1,0 +1,30 @@
+# fly.toml — Autonoma-X Engine on Fly.io
+app = "autonomax-engine"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+  DATABASE_URL = "file:/data/prod.db"
+  FRONTEND_URL = "https://autonomax-engine.fly.dev"
+  CORS_ORIGIN = "https://autonomax-engine.fly.dev"
+
+[mounts]
+  source = "data"
+  destination = "/data"

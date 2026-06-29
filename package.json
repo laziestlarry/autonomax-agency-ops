@@ -9,7 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "server": "tsx server.ts",
-    "start": "npx prisma generate && tsx server.ts",
+    "start": "npx prisma db push --skip-generate 2>/dev/null; npx prisma generate && tsx server.ts",
     "serve": "npm run build && npm run start",
     "db:push": "npx prisma db push",
     "db:generate": "npx prisma generate",
