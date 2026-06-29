@@ -22,10 +22,6 @@ COPY server.ts ./
 COPY index.html ./
 RUN npm run build
 
-# Compile server TypeScript to CommonJS JavaScript for production runtime
-# (package.json has "type":"module" so .cjs extension avoids ESM/CommonJS conflict)
-RUN npx tsc -p tsconfig.server.json --outDir dist-server && mv dist-server/server.js dist-server/server.cjs
-
 # Production image
 FROM node:20-bookworm-slim
 WORKDIR /app
@@ -41,8 +37,15 @@ RUN mkdir -p /data
 # Copy built frontend
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
+
+# Copy all node_modules (includes tsx in devDeps for runtime)
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist-server ./dist-server
+
+# Symlink tsx so `tsx server.ts` works directly (no npx needed)
+RUN ln -sf /app/node_modules/.bin/tsx /usr/local/bin/tsx
+
+# Copy server source — tsx compiles TypeScript at runtime
+COPY --from=builder /app/server.ts ./
 COPY --from=builder /app/ops ./ops
 COPY --from=builder /app/prisma ./prisma
 
@@ -53,5 +56,5 @@ ENV PRISMA_ENGINES_CHECK_SKIP_OPENSSL=1
 
 EXPOSE 3001
 
-# On startup: push schema (if DB doesn't exist it creates it), then run compiled server
-CMD npx prisma db push --skip-generate --accept-data-loss 2>/dev/null; node dist-server/server.cjs
+# On startup: push schema (if DB doesn't exist it creates it), then run server via tsx
+CMD npx prisma db push --skip-generate --accept-data-loss 2>/dev/null && tsx server.ts
