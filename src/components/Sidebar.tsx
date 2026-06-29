@@ -16,7 +16,9 @@ import {
   BarChart3,
   Calendar,
   Users,
-  Crown
+  Crown,
+  Megaphone,
+  Home
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,6 +29,7 @@ interface SidebarProps {
 }
 
 const navItems = [
+  { id: 'home', label: 'Home', icon: Home },
   { id: 'intelligence', label: 'Intelligence', icon: Brain },
   { id: 'synthesis', label: 'Synthesis', icon: Code2 },
   { id: 'blueprints', label: 'Blueprints', icon: TrendingUp },
@@ -37,6 +40,7 @@ const navItems = [
   { id: 'ops_schedule', label: 'Schedules', icon: Calendar },
   { id: 'ops_org', label: 'Organization', icon: Users },
   { id: 'ops_analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'ops_plays', label: 'GTM Plays', icon: Megaphone },
   // Core
   { id: 'governance', label: 'Governance', icon: Shield },
   { id: 'monetization', label: 'Monetization', icon: DollarSign },

@@ -7,6 +7,7 @@ import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
 import opsEngine from './ops/index';
+import { AI_AVAILABLE, AI_PROVIDER_LABEL, AI_PROVIDER_TYPE, AI_MODEL, generate } from './ops/ai';
 
 dotenv.config();
 
@@ -305,55 +306,39 @@ app.post('/api/launch', async (req, res) => {
 // API: AI/Optional Features (graceful fallback if unavailable)
 // ============================================================
 
-// OpenRouter-style AI orchestration — works with any OpenAI-compatible API
-const OPENAI_KEY = process.env.OPENAI_API_KEY || '';
-const AI_AVAILABLE = OPENAI_KEY.length > 0;
+// ============================================================
+// AI BOT EXECUTION (uses pluggable AI abstraction)
+// ============================================================
 
-// Bot execution (simulated if no AI key, real if available)
+// Bot execution (AI-powered if available, simulation fallback)
 app.post('/api/v1/bots/run', async (req, res) => {
   const { botId } = req.body;
   if (!botId) return res.status(400).json({ error: 'botId required' });
 
   const startTime = Date.now();
 
-  // If AI is available, use it for richer output
   if (AI_AVAILABLE) {
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: `You are ${botId}, an autonomous micro-bot in the Autonoma-X system. Execute your task and output a JSON object with status, summary, and 3-5 action items. Keep responses concise.` },
-            { role: 'user', content: `Execute your function for the Autonoma-X engine. Current time: ${new Date().toISOString()}` },
-          ],
-          temperature: 0.3,
-          max_tokens: 500,
-        }),
+      const aiOutput = await generate(
+        `You are ${botId}, an autonomous micro-bot in the Autonoma-X system. Execute your task and output a JSON object with status, summary, and 3-5 action items. Keep responses concise.`,
+        `Execute your function for the Autonoma-X engine. Current time: ${new Date().toISOString()}`,
+        { temperature: 0.3, maxTokens: 500 },
+      );
+
+      res.json({
+        botId,
+        status: 'completed',
+        duration: Date.now() - startTime,
+        ai: true,
+        provider: AI_PROVIDER_TYPE,
+        output: aiOutput,
+        logs: [
+          `[${new Date().toISOString()}] 🧠 ${botId} started (${AI_PROVIDER_LABEL})`,
+          `[${new Date().toISOString()}] ⚙️ Processing...`,
+          `[${new Date().toISOString()}] ✅ ${botId} completed in ${Date.now() - startTime}ms`,
+        ],
       });
-
-      if (response.ok) {
-        const data = await response.json() as { choices?: { message?: { content?: string } }[] };
-        const aiOutput = data.choices?.[0]?.message?.content || '';
-
-        res.json({
-          botId,
-          status: 'completed',
-          duration: Date.now() - startTime,
-          ai: true,
-          output: aiOutput,
-          logs: [
-            `[${new Date().toISOString()}] 🧠 ${botId} started (AI-powered)`,
-            `[${new Date().toISOString()}] ⚙️ Processing...`,
-            `[${new Date().toISOString()}] ✅ ${botId} completed in ${Date.now() - startTime}ms`,
-          ],
-        });
-        return;
-      }
+      return;
     } catch {
       console.log(`⚠️ AI unavailable for ${botId}, falling back to simulation`);
     }
@@ -366,6 +351,7 @@ app.post('/api/v1/bots/run', async (req, res) => {
     status: 'completed',
     duration: Date.now() - startTime,
     ai: false,
+    provider: 'simulation',
     logs: [
       `[${new Date().toISOString()}] 🧠 ${botId} started (simulated)`,
       `[${new Date().toISOString()}] ⚙️ Processing...`,
@@ -378,6 +364,8 @@ app.post('/api/v1/bots/run', async (req, res) => {
 app.get('/api/v1/bots/status', (_req, res) => {
   res.json({
     ai_available: AI_AVAILABLE,
+    ai_provider: AI_PROVIDER_TYPE,
+    ai_model: AI_MODEL,
     bots: [
       { id: 'copy_bot', status: 'ready', description: 'Copy & content generation' },
       { id: 'mockup_bot', status: 'idle', description: 'Visual mockups & wireframes' },
@@ -501,11 +489,13 @@ app.listen(PORT, () => {
   console.log(`\n🚀 AUTONOMA-X ENGINE v3.2.1 — AGENCY OPERATIONS LIVE`);
   console.log(`📡 http://localhost:${PORT}`);
   console.log(`🌐 Mode: ${STRIPE_KEY.startsWith('sk_live_') ? '💰 LIVE REVENUE' : 'TEST/Simulation'}`);
-  console.log(`🤖 AI: ${AI_AVAILABLE ? 'Connected (OpenAI)' : 'Not configured (simulated bots)'}`);
+  console.log(`🤖 AI: ${AI_AVAILABLE ? `Connected (${AI_PROVIDER_LABEL})` : 'Not configured (simulated bots)'}`);
+  console.log(`   ⚙️  Provider: ${AI_PROVIDER_TYPE} | Model: ${AI_MODEL}`);
   console.log(`💾 Database: SQLite (Prisma)`);
   console.log(`🔗 Webhook: /api/webhook, /webhooks/payments, /webhooks/stripe`);
-  console.log(`🏢 Ops Engine: /ops — org, pipeline, workflows, analytics, fulfillment`);
+  console.log(`🏢 Ops Engine: /ops — org, pipeline, workflows, analytics, fulfillment, plays, ai`);
   console.log(`📋 Pipeline: 7 stages | Schedules: 5 active (daily, weekly, monthly, continuous)`);
   console.log(`🧠 Self-improving: ${AI_AVAILABLE ? 'AI-powered recommendations active' : 'Rule-based recommendations'}`);
-  console.log(`👥 Team: Directors → Commanders → Managers → Operators\n`);
+  console.log(`👥 Team: Directors → Commanders → Managers → Operators`);
+  console.log(`🎯 GTM Plays: Zero-Ad Sales, Partnership Power, Hype Machine, LinkedIn, X.com\n`);
 });

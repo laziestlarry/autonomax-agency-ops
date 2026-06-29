@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
+import { HomePage } from './components/views/HomePage';
 import { Intelligence } from './components/views/Intelligence';
 import { Synthesis } from './components/views/Synthesis';
 import { Blueprints } from './components/views/Blueprints';
@@ -13,16 +14,21 @@ import { PipelineView } from './components/views/ops/PipelineView';
 import { OrgChart } from './components/views/ops/OrgChart';
 import { AnalyticsView } from './components/views/ops/AnalyticsView';
 import { ScheduleView } from './components/views/ops/ScheduleView';
+import { PlaysView } from './components/views/ops/PlaysView';
 import { Menu } from 'lucide-react';
 
 function App() {
-  const [activeView, setActiveView] = useState('ops_dashboard');
+  const [activeView, setActiveView] = useState('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const renderView = () => {
     switch (activeView) {
+      // Public home / marketing
+      case 'home':
+        return <HomePage />;
+      // App views
       case 'intelligence':
         return <Intelligence />;
       case 'synthesis':
@@ -50,10 +56,17 @@ function App() {
         return <AnalyticsView />;
       case 'ops_schedule':
         return <ScheduleView />;
+      case 'ops_plays':
+        return <PlaysView />;
       default:
-        return <OpsDashboard />;
+        return <HomePage />;
     }
   };
+
+  // The HomePage is a full standalone marketing page — hide sidebar chrome
+  if (activeView === 'home') {
+    return renderView();
+  }
 
   return (
     <div className="flex h-screen bg-[#0c0a09] overflow-hidden">
