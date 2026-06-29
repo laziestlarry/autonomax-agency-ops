@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// CORE: Revenue & Orders
+// ============================================================
+
+model Order {
+  id          String   @id @default(cuid())
+  tier        String
+  tierId      String
+  amount      Float
+  email       String
+  status      String   @default("pending") // pending, completed, active, cancelled
+  sessionId   String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  launchLogs  String?  // JSON
+  launchedAt  DateTime?
+
+  // Relations
+  pipelineSteps  PipelineStep[]
+  deliverables   Deliverable[]
+}
+
+// ============================================================
+// PIPELINE: Lead-to-Revenue
+// ============================================================
+
+model Lead {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  company     String?
+  source      String   @default("direct") // direct, referral, linkedin, twitter, shopify, partner
+  status      String   @default("new") // new, contacted, qualified, proposal, closed, lost
+  score       Int      @default(0)
+  notes       String?
+  estimatedValue Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  deals       Deal[]
+}
+
+model Deal {
+  id          String   @id @default(cuid())
+  name        String
+  leadId      String
+  tier        String   // diagnostic, command, activation
+  value       Float
+  stage       String   @default("qualification") // qualification, proposal, negotiation, closed_won, closed_lost
+  probability Int      @default(20) // 0-100
+  notes       String?
+  assignedTo  String?  // role/user id
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  closedAt    DateTime?
+
+  lead        Lead     @relation(fields: [leadId], references: [id])
+  steps       PipelineStep[]
+}
+
+model PipelineStep {
+  id          String   @id @default(cuid())
+  dealId      String?
+  orderId     String?
+  stage       String   // qualification, proposal, negotiation, fulfillment, launch, complete
+  action      String
+  status      String   @default("pending") // pending, in_progress, completed, blocked
+  assignedTo  String?
+  result      String?
+  scheduledAt DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  deal        Deal?    @relation(fields: [dealId], references: [id])
+  order       Order?   @relation(fields: [orderId], references: [id])
+}
+
+// ============================================================
+// DELIVERY: Fulfillment & Deliverables
+// ============================================================
+
+model Deliverable {
+  id          String   @id @default(cuid())
+  orderId     String
+  name        String
+  type        String   // report, audit, action_plan, integration, health_check
+  status      String   @default("pending") // pending, generating, completed, delivered
+  content     String?  // JSON content / URL
+  filePath    String?
+  generatedAt DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime @default(now())
+
+  order       Order    @relation(fields: [orderId], references: [id])
+}
+
+// ============================================================
+// WORKFLOW: Schedules & Operations
+// ============================================================
+
+model Workflow {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // daily, weekly, monthly, onetime, trigger
+  status      String   @default("active") // active, paused, completed, archived
+  trigger     String?  // webhook, schedule, manual
+  interval    String?  // cron expression
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+  config      String?  // JSON config
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  jobs        WorkflowJob[]
+}
+
+model WorkflowJob {
+  id          String   @id @default(cuid())
+  workflowId  String
+  name        String
+  type        String   // bot_execution, email, notification, fulfillment, report
+  status      String   @default("pending") // pending, running, completed, failed
+  assignedTo  String?
+  input       String?  // JSON
+  output      String?  // JSON
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  workflow    Workflow @relation(fields: [workflowId], references: [id])
+}
+
+// ============================================================
+// ANALYTICS: Business Intelligence
+// ============================================================
+
+model KpiSnapshot {
+  id          String   @id @default(cuid())
+  metric      String   // mrr, cac, ltv, conversion_rate, ebitda, churn
+  value       Float
+  unit        String   // usd, percentage, count, ratio
+  change      Float    // change from previous period
+  trend       String   // up, down, stable
+  period      String   // daily, weekly, monthly
+  recordedAt  DateTime @default(now())
+}
+
+model RevenueEvent {
+  id          String   @id @default(cuid())
+  type        String   // sale, refund, recurring, payout
+  source      String   // stripe, shopify, shopier, referral
+  amount      Float
+  fee         Float?
+  netAmount   Float?
+  reference   String?  // stripe charge id, etc
+  description String?
+  recordedAt  DateTime @default(now())
+}
+
+// ============================================================
+// ORG: Team & Roles
+// ============================================================
+
+model TeamMember {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  role        String   // director, commander, manager, operator
+  title       String
+  level       Int      @default(1) // 0=director, 1=commander, 2=manager, 3=operator
+  reportsTo   String?  // team member id this person reports to
+  skills      String?  // JSON array
+  status      String   @default("active") // active, break, offboarding
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

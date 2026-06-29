@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "workspace": {
+    "name": "deeps",
+    "createdAt": 1782756137129,
+    "preset": "starter"
+  },
+  "authorizedRoots": [
+    "/Users/pq/deeps"
+  ],
+  "reload": null
+}
