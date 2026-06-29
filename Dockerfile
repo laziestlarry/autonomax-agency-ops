@@ -22,8 +22,9 @@ COPY server.ts ./
 COPY index.html ./
 RUN npm run build
 
-# Compile server TypeScript to JavaScript for production runtime
-RUN npx tsc -p tsconfig.server.json --outDir dist-server
+# Compile server TypeScript to CommonJS JavaScript for production runtime
+# (package.json has "type":"module" so .cjs extension avoids ESM/CommonJS conflict)
+RUN npx tsc -p tsconfig.server.json --outDir dist-server && mv dist-server/server.js dist-server/server.cjs
 
 # Production image
 FROM node:20-bookworm-slim
@@ -53,4 +54,4 @@ ENV PRISMA_ENGINES_CHECK_SKIP_OPENSSL=1
 EXPOSE 3001
 
 # On startup: push schema (if DB doesn't exist it creates it), then run compiled server
-CMD npx prisma db push --skip-generate --accept-data-loss 2>/dev/null; node dist-server/server.js
+CMD npx prisma db push --skip-generate --accept-data-loss 2>/dev/null; node dist-server/server.cjs
