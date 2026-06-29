@@ -310,54 +310,50 @@ app.post('/api/launch', async (req, res) => {
 // AI BOT EXECUTION (uses pluggable AI abstraction)
 // ============================================================
 
-// Bot execution (AI-powered if available, simulation fallback)
+// Bot execution (AI-powered only — never simulation)
 app.post('/api/v1/bots/run', async (req, res) => {
   const { botId } = req.body;
   if (!botId) return res.status(400).json({ error: 'botId required' });
 
   const startTime = Date.now();
 
-  if (AI_AVAILABLE) {
-    try {
-      const aiOutput = await generate(
-        `You are ${botId}, an autonomous micro-bot in the Autonoma-X system. Execute your task and output a JSON object with status, summary, and 3-5 action items. Keep responses concise.`,
-        `Execute your function for the Autonoma-X engine. Current time: ${new Date().toISOString()}`,
-        { temperature: 0.3, maxTokens: 500 },
-      );
-
-      res.json({
-        botId,
-        status: 'completed',
-        duration: Date.now() - startTime,
-        ai: true,
-        provider: AI_PROVIDER_TYPE,
-        output: aiOutput,
-        logs: [
-          `[${new Date().toISOString()}] 🧠 ${botId} started (${AI_PROVIDER_LABEL})`,
-          `[${new Date().toISOString()}] ⚙️ Processing...`,
-          `[${new Date().toISOString()}] ✅ ${botId} completed in ${Date.now() - startTime}ms`,
-        ],
-      });
-      return;
-    } catch {
-      console.log(`⚠️ AI unavailable for ${botId}, falling back to simulation`);
-    }
+  if (!AI_AVAILABLE) {
+    return res.status(503).json({
+      error: 'No AI provider configured',
+      botId,
+      help: 'Set GROQ_API_KEY for free AI inference, or configure another AI provider in .env',
+    });
   }
 
-  // Simulation fallback (always works)
-  await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
-  res.json({
-    botId,
-    status: 'completed',
-    duration: Date.now() - startTime,
-    ai: false,
-    provider: 'simulation',
-    logs: [
-      `[${new Date().toISOString()}] 🧠 ${botId} started (simulated)`,
-      `[${new Date().toISOString()}] ⚙️ Processing...`,
-      `[${new Date().toISOString()}] ✅ ${botId} completed`,
-    ],
-  });
+  try {
+    const aiOutput = await generate(
+      `You are ${botId}, an autonomous micro-bot in the Autonoma-X system. Execute your task and output a JSON object with status, summary, and 3-5 action items. Keep responses concise.`,
+      `Execute your function for the Autonoma-X engine. Current time: ${new Date().toISOString()}`,
+      { temperature: 0.3, maxTokens: 500 },
+    );
+
+    res.json({
+      botId,
+      status: 'completed',
+      duration: Date.now() - startTime,
+      ai: true,
+      provider: AI_PROVIDER_TYPE,
+      output: aiOutput,
+      logs: [
+        `[${new Date().toISOString()}] 🧠 ${botId} started (${AI_PROVIDER_LABEL})`,
+        `[${new Date().toISOString()}] ⚙️ Processing...`,
+        `[${new Date().toISOString()}] ✅ ${botId} completed in ${Date.now() - startTime}ms`,
+      ],
+    });
+  } catch (err: any) {
+    console.error(`❌ AI execution failed for ${botId}:`, err.message);
+    res.status(502).json({
+      error: `AI execution failed: ${err.message}`,
+      botId,
+      ai: true,
+      provider: AI_PROVIDER_TYPE,
+    });
+  }
 });
 
 // Bot status
@@ -489,13 +485,13 @@ app.listen(PORT, () => {
   console.log(`\n🚀 AUTONOMA-X ENGINE v3.2.1 — AGENCY OPERATIONS LIVE`);
   console.log(`📡 http://localhost:${PORT}`);
   console.log(`🌐 Mode: ${STRIPE_KEY.startsWith('sk_live_') ? '💰 LIVE REVENUE' : 'TEST/Simulation'}`);
-  console.log(`🤖 AI: ${AI_AVAILABLE ? `Connected (${AI_PROVIDER_LABEL})` : 'Not configured (simulated bots)'}`);
-  console.log(`   ⚙️  Provider: ${AI_PROVIDER_TYPE} | Model: ${AI_MODEL}`);
+  console.log(`🤖 AI: ${AI_AVAILABLE ? `✅ Connected (${AI_PROVIDER_LABEL})` : '❌ NOT CONFIGURED — set GROQ_API_KEY in .env'}`);
+  console.log(`   ⚙️  Provider: ${AI_PROVIDER_LABEL} | Model: ${AI_MODEL}`);
   console.log(`💾 Database: SQLite (Prisma)`);
   console.log(`🔗 Webhook: /api/webhook, /webhooks/payments, /webhooks/stripe`);
   console.log(`🏢 Ops Engine: /ops — org, pipeline, workflows, analytics, fulfillment, plays, ai`);
   console.log(`📋 Pipeline: 7 stages | Schedules: 5 active (daily, weekly, monthly, continuous)`);
-  console.log(`🧠 Self-improving: ${AI_AVAILABLE ? 'AI-powered recommendations active' : 'Rule-based recommendations'}`);
+  console.log(`🧠 Self-improving: ${AI_AVAILABLE ? 'AI-powered recommendations active' : 'AI not configured — bot endpoints will return 503'}`);
   console.log(`👥 Team: Directors → Commanders → Managers → Operators`);
   console.log(`🎯 GTM Plays: Zero-Ad Sales, Partnership Power, Hype Machine, LinkedIn, X.com\n`);
 });

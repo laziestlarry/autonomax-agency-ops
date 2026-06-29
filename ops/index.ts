@@ -31,14 +31,20 @@ router.get('/', (_req, res) => {
 // GET /ops/ai/status — AI provider status
 router.get('/ai/status', async (_req, res) => {
   const status = getProviderStatus();
-  // If in simulation mode, try to auto-detect Ollama
-  if (status.canAutoDetectOllama) {
+  // If no providers configured, try to auto-detect Ollama
+  if (status.totalConfigured === 0) {
     const ollamaFound = await checkOllama();
     if (ollamaFound) {
-      status.available = true;
-      status.provider = 'ollama';
-      status.label = 'Ollama (auto-detected)';
-      status.ollamaAutoDetected = true;
+      res.json({
+        ...status,
+        available: true,
+        primaryProvider: 'ollama',
+        primaryLabel: 'Ollama (auto-detected)',
+        model: process.env.OLLAMA_MODEL || 'llama3',
+        configuredProviders: [{ id: 'ollama', label: 'Ollama (auto-detected)', model: process.env.OLLAMA_MODEL || 'llama3' }],
+        totalConfigured: 1,
+      });
+      return;
     }
   }
   res.json(status);

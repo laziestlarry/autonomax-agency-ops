@@ -10,7 +10,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "declaration": false,
+    "sourceMap": false
   },
   "include": ["server.ts", "ops/**/*.ts"]
 }
