@@ -22,8 +22,8 @@ primary_region = "iad"
   NODE_ENV = "production"
   PORT = "3001"
   DATABASE_URL = "file:/data/prod.db"
-  FRONTEND_URL = "https://autonomax-engine.fly.dev"
-  CORS_ORIGIN = "https://autonomax-engine.fly.dev"
+  FRONTEND_URL = "https://app.aikagan.com"
+  CORS_ORIGIN = "https://app.aikagan.com"
 
 [mounts]
   source = "data"
