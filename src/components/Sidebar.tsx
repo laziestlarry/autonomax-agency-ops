@@ -18,7 +18,8 @@ import {
   Users,
   Crown,
   Megaphone,
-  Home
+  Home,
+  ExternalLink
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -124,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
           })()}
         </nav>
 
-        <div className="border-t border-[#44403c] p-4">
+        <div className="border-t border-[#44403c] p-4 space-y-2">
           <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-[#292524]/50">
             <div className="w-8 h-8 rounded-full bg-[#d97706]/20 border border-[#d97706]/30 flex items-center justify-center">
               <span className="text-[#d97706] text-xs font-bold">D</span>
@@ -135,6 +136,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
             </div>
             <div className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
           </div>
+          <a
+            href="https://aikagan.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-2 py-2 rounded-lg text-xs text-[#a8a29e] hover:text-[#d97706] hover:bg-[#292524]/70 transition-colors"
+          >
+            <ExternalLink size={14} />
+            <span>AIKAGAN Home</span>
+          </a>
         </div>
       </aside>
     </>
