@@ -15,7 +15,7 @@ COPY prisma/schema.prisma ./prisma/
 RUN npx prisma generate
 
 # Copy source and build
-COPY tsconfig*.json vite.config.ts ./
+COPY tsconfig*.json vite.config.ts tailwind.config.js postcss.config.js ./
 COPY src ./src
 COPY ops ./ops
 COPY server.ts ./
