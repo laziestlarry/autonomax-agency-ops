@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { randomUUID } from 'crypto';
+import { LIVE_FREELANCE_QUEUE } from './freelance-live-queue';
 
 const router = Router();
 
@@ -43,6 +44,8 @@ export interface FreelanceOpportunity {
     firstMilestone: string;
     deliveryWindow: string;
     price?: number;
+    currency?: string;
+    bidText?: string;
     submittedAt?: string;
   };
   delivery?: {
@@ -88,6 +91,42 @@ function suggestLane(title = '', notes = ''): Lane {
   if (/automation|agent|ai |workflow|api|llm/.test(text)) return 'ai_automation';
   if (/role|job|full[- ]?time|part[- ]?time|employment/.test(text)) return 'remote_role';
   return 'other';
+}
+
+// Seed the first human-approved execution queue from fresh marketplace evidence.
+// These are proposal-ready internally; external marketplace submission remains account-bound.
+for (const seed of LIVE_FREELANCE_QUEUE) {
+  const item: FreelanceOpportunity = {
+    id: seed.id,
+    source: seed.source,
+    sourceUrl: seed.sourceUrl,
+    title: seed.title,
+    lane: seed.lane,
+    budgetMin: seed.budgetMin,
+    budgetMax: seed.budgetMax,
+    currency: seed.currency,
+    geographyEligible: seed.geographyEligible,
+    skillsEvidence: seed.skillsEvidence,
+    reusableAssetFit: seed.reusableAssetFit,
+    speedToFirstMilestone: seed.speedToFirstMilestone,
+    paymentConfidence: seed.paymentConfidence,
+    competitionRisk: seed.competitionRisk,
+    regulatedRisk: seed.regulatedRisk,
+    notes: seed.notes,
+    stage: seed.stage,
+    score: 0,
+    createdAt: seed.capturedAt,
+    updatedAt: seed.capturedAt,
+    proposal: {
+      firstMilestone: seed.proposal.firstMilestone,
+      deliveryWindow: seed.proposal.deliveryWindow,
+      price: seed.proposal.price,
+      currency: seed.proposal.currency,
+      bidText: seed.proposal.bidText,
+    },
+  };
+  item.score = scoreOpportunity(item);
+  opportunities.set(item.id, item);
 }
 
 router.get('/freelance/status', (_req, res) => {
@@ -177,7 +216,7 @@ router.post('/freelance/opportunities/:id/proposal', (req, res) => {
   if (item.stage !== 'approved') {
     return res.status(409).json({ error: 'human approval is required before proposal preparation' });
   }
-  const { firstMilestone, deliveryWindow, price } = req.body || {};
+  const { firstMilestone, deliveryWindow, price, currency, bidText } = req.body || {};
   if (!firstMilestone || !deliveryWindow) {
     return res.status(400).json({ error: 'firstMilestone and deliveryWindow are required' });
   }
@@ -185,6 +224,8 @@ router.post('/freelance/opportunities/:id/proposal', (req, res) => {
     firstMilestone: String(firstMilestone),
     deliveryWindow: String(deliveryWindow),
     price: Number.isFinite(Number(price)) ? Number(price) : undefined,
+    currency: currency ? String(currency) : item.currency,
+    bidText: bidText ? String(bidText) : item.proposal?.bidText,
   };
   item.stage = 'proposed';
   item.updatedAt = new Date().toISOString();
