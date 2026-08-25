@@ -5,6 +5,7 @@ import workflowsRouter from './workflows';
 import analyticsRouter from './analytics';
 import fulfillmentRouter from './fulfillment';
 import playsRouter from './plays';
+import freelancingRouter from './freelancing';
 import { getProviderStatus, checkOllama } from './ai';
 
 const router = Router();
@@ -16,13 +17,14 @@ router.use(workflowsRouter);
 router.use(analyticsRouter);
 router.use(fulfillmentRouter);
 router.use(playsRouter);
+router.use(freelancingRouter);
 
 // GET /ops — Ops engine status
 router.get('/', (_req, res) => {
   res.json({
     engine: 'Autonoma-X Operations Engine',
-    version: '3.2.1',
-    modules: ['organization', 'pipeline', 'workflows', 'analytics', 'fulfillment', 'plays', 'ai'],
+    version: '3.3.0',
+    modules: ['organization', 'pipeline', 'workflows', 'analytics', 'fulfillment', 'plays', 'freelancing', 'ai'],
     status: 'online',
     timestamp: new Date().toISOString(),
   });
