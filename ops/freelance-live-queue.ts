@@ -57,34 +57,6 @@ export const LIVE_FREELANCE_QUEUE: SeedOpportunity[] = [
     }
   },
   {
-    id: 'freelancer-sketchup-layout-20260825',
-    source: 'Freelancer',
-    sourceUrl: 'https://www.freelancer.com/projects/3d-architecture/detailed-sketchup-model-update-layout',
-    title: 'Detailed SketchUp Model Update & Layout Sheets',
-    lane: 'cad_3d',
-    budgetMin: 750,
-    budgetMax: 1500,
-    currency: 'USD',
-    geographyEligible: true,
-    skillsEvidence: 90,
-    reusableAssetFit: 80,
-    speedToFirstMilestone: 75,
-    paymentConfidence: 70,
-    competitionRisk: 50,
-    regulatedRisk: 15,
-    notes: 'Existing SketchUp model, look-book, specification package and LayOut template supplied. Work is model refinement plus plans/elevations/sections/perspectives in LayOut.',
-    capturedAt: '2026-08-25T19:20:00Z',
-    expiresAt: '2026-08-26T23:59:59Z',
-    stage: 'approved',
-    proposal: {
-      firstMilestone: 'Refine one representative room/space, clean tags/materials, and produce one matching LayOut sheet using the client template.',
-      deliveryWindow: '12-18 hours after receiving model, look-book and template',
-      price: 120,
-      currency: 'USD',
-      bidText: 'Your scope is well suited to a staged delivery. I can begin with one representative space: clean the SketchUp geometry/tags/materials against the look-book, then produce one complete LayOut sheet using your supplied template with plan/elevation/section/perspective content. That gives you a concrete quality benchmark before the full model and documentation set is expanded. I will preserve native editable files and keep naming/tags organised for ongoing revisions. Portfolio: https://aikagan.com/work-with-kagan/. I can start as soon as the model, specification package and LayOut template are available.'
-    }
-  },
-  {
     id: 'freelancer-bedroom-render-20260825',
     source: 'Freelancer',
     sourceUrl: 'https://www.freelancer.com/projects/interior-design/bedroom-blueprint-render',
@@ -110,6 +82,34 @@ export const LIVE_FREELANCE_QUEUE: SeedOpportunity[] = [
       price: 3000,
       currency: 'INR',
       bidText: 'I can turn the supplied bedroom blueprint into a clean, accurately scaled 3D scene and give you a reviewable first view quickly. My first milestone would be the complete room shell, openings and main furniture placement plus one draft camera angle; once you confirm layout, I would finish materials/textures and deliver the native model, FBX/OBJ and three high-resolution stills. This avoids spending time polishing the wrong layout. Portfolio: https://aikagan.com/work-with-kagan/. I can begin immediately after receiving the blueprint and any preferred material/furniture references.'
+    }
+  },
+  {
+    id: 'freelancer-sketchup-layout-20260825',
+    source: 'Freelancer',
+    sourceUrl: 'https://www.freelancer.com/projects/3d-architecture/detailed-sketchup-model-update-layout',
+    title: 'Detailed SketchUp Model Update & LayOut Sheets',
+    lane: 'cad_3d',
+    budgetMin: 750,
+    budgetMax: 1500,
+    currency: 'USD',
+    geographyEligible: true,
+    skillsEvidence: 90,
+    reusableAssetFit: 80,
+    speedToFirstMilestone: 75,
+    paymentConfidence: 70,
+    competitionRisk: 50,
+    regulatedRisk: 15,
+    notes: 'Existing SketchUp model, look-book, specification package and LayOut template supplied. Work is model refinement plus plans/elevations/sections/perspectives in LayOut.',
+    capturedAt: '2026-08-25T19:20:00Z',
+    expiresAt: '2026-08-26T23:59:59Z',
+    stage: 'approved',
+    proposal: {
+      firstMilestone: 'Refine one representative room/space, clean tags/materials, and produce one matching LayOut sheet using the client template.',
+      deliveryWindow: '12-18 hours after receiving model, look-book and template',
+      price: 120,
+      currency: 'USD',
+      bidText: 'Your scope is well suited to a staged delivery. I can begin with one representative space: clean the SketchUp geometry/tags/materials against the look-book, then produce one complete LayOut sheet using your supplied template with plan/elevation/section/perspective content. That gives you a concrete quality benchmark before the full model and documentation set is expanded. I will preserve native editable files and keep naming/tags organised for ongoing revisions. Portfolio: https://aikagan.com/work-with-kagan/. I can start as soon as the model, specification package and LayOut template are available.'
     }
   },
   {
